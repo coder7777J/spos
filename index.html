@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <div class="a1">
+    <pre>  
+        package SPOSLAB;
+        import java.io.*;
+        
+        class pass2
+        {
+            public void machineCode() throws IOException
+            {
+                BufferedReader mot = new BufferedReader(new FileReader("intermediate_code.txt"));
+                BufferedReader sym = new BufferedReader(new FileReader("symbol_table.txt"));
+                BufferedReader lit = new BufferedReader(new FileReader("literal_table.txt"));
+                String s,symboltab,literaltab;
+                int m=0;
+                String array[]=new String[4];
+                String array2[]=new String[4];
+                String array3[]=new String[4];
+                System.out.println("Machine Code");
+                while((s = mot.readLine())!=null)
+                {
+                    array=s.split(" ");
+                    if(array.length>2 && array[0].equals("AD")!=true) {
+                        System.out.print(array[0]);
+                        System.out.print(" " + array[2]);
+                        if(array.length>=4)
+                        {
+                            System.out.print(" "+array[3]);
+                            if(array[4].equals("L"))
+                             {
+                                while((literaltab=lit.readLine())!=null)
+                                {
+                                    array3=literaltab.split(" ");
+                                    if(array3.length>1)
+                                        System.out.print(" "+ array3[2]);
+                                    break;
+                            }
+                        }
+                            if(array[4].equals("S"))
+                            {
+                                while((symboltab=sym.readLine())!=null)
+                                {
+                                    array2=symboltab.split(" ");
+                                    if(array2.length>1)
+                                    System.out.print(" "+ array2[2]);
+                                    break;
+                                }
+                            }
+                        }
+                        System.out.println();
+                    }
+                }
+            }
+        }
+        class Pass1
+        {
+            private int loc=0,loc1=0,j=0,k,sym=0,lit=0,v=0,w=0;
+            private String s,s3,s4,tmp,sd,sl;
+            private String s1[],s2[]=new String[4];
+            private String s5[][]=new String[4][2];
+            public void insert() throws IOException
+             {
+                 BufferedReader b1 = new BufferedReader(new FileReader("assembly_code.txt"));
+                 BufferedWriter b3 = new BufferedWriter(new FileWriter("symbol_table.txt"));
+                 BufferedWriter b5 = new BufferedWriter(new FileWriter("literal_table.txt"));
+                 BufferedWriter b4 = new BufferedWriter(new FileWriter("intermediate_code.txt"));
+                 while((s=b1.readLine())!=null)
+                 {
+                     int flag=0,m=0;
+                     s1 = s.split(" ");
+                     if(s1[1].equals("START"))
+                     {
+                         b4.write("AD 01");
+                         b4.write(" C "+s1[2]);
+                         loc=Integer.parseInt(s1[2]);
+                         b4.newLine();
+                     }
+                     else if(s1[1].equals("END"))
+                     {
+                         for(int i=1;i<=lit;i++)
+                         {
+                             //b4.write(loc+" ");
+                             b4.write("AD 02");
+                             b4.write(" C "+i);
+                             loc=loc+1;
+                             b4.newLine();
+                         }
+                     }
+                     else
+                     {
+                         b4.write(loc+"");
+                         if(s1[0].equals("-")!=true)
+                         {
+                             sym++;
+                             b3.write(" "+s1[0]);
+                             b3.write(" "+loc+" ");
+                         }
+                         BufferedReader b2 = new BufferedReader(new FileReader("opcode.txt"));
+                         while((sl=b2.readLine())!=null)
+                         {
+                             j=0;
+                             s2 = sl.split(" ");
+                             if(s1[1].equals(s2[0])==true)
+                             {
+                                 for(int a=1;a<3;a++)
+                                 {
+                                     //b4.write(" ");
+                                     b4.write(" "+s2[a]);
+                                 }
+                             }
+                             if(s1[2].equals(s2[0])==true)
+                             {
+                                 for(int a=1;a<2;a++)
+                                 {
+                                     //b4.write(" ");
+                                     b4.write(" "+s2[a]);
+                                 }
+                             }
+                         }
+                         if(s1[3].contains("="))
+                         {
+                             int i;flag=0;
+                             for( i=0;i< lit;i++)
+                             {
+                                 if(s5[i][1].equals(s1[3]))
+                                 {
+                                     flag=1;
+                                     break;
+                                 }
+                             }
+                             if(flag!=1)
+                             {
+                                 lit++;
+                                 s5[v][0]=Integer.toString(lit);
+                                 s5[v][1]=s1[3];
+                                 v++;
+                                 b5.write(" "+lit);
+                                 b5.write(" "+s1[3]);
+                                 b5.newLine();
+                                // b4.write(" ");
+                                 b4.write(" "+"L "+lit);
+                             }
+                             else
+                             {
+                                 //b4.write(" ");
+                                 b4.write(" "+"L "+s5[i][0]+"\n");
+                             }
+                         }
+                         else if((s1[3]).matches("[a-zA-Z]"))
+                         {
+                             b4.write(" "+"S "+sym);
+                         }
+                         loc=loc+1;
+                         b4.newLine();
+                         b3.newLine();
+                     }
+                 }
+                 b4.close();
+                 b3.close();
+                 b5.close();
+             }
+        }
+        class SPOSL_P1 {
+            public static void main(String args[]) throws IOException {
+                    Pass1 obj=new Pass1();
+                    obj.insert();
+                    pass2 obj2 =new pass2();
+                    obj2.machineCode();
+            }
+        }
+        /*
+        Input files:
+        assembly_code.txt
+        
+        - START 100 -
+        L1 MOVER AREG =3
+        - MOVEM BREG X
+        - SUB AREG =1
+        - LTORG - -
+        - MOVEM AREG Y
+        - BC any L1
+        - ADD CREG, 4
+        X DC 6 -
+        Y DS 2 -
+        - END - -
+        
+         opcode.txt:
+        STOP IS 01
+        ADD IS 02
+        SUB IS 03
+        MUL IS 04
+        MOVER IS 05
+        MOVEM IS 06
+        START AD 01
+        END AD 02
+        ORIGIN AD 03
+        LTORG AD 04
+        AREG R1
+        BREG R2
+        CREG R3
+        DREG R4
+        DC DL 01
+        DS DL 02
+        ********************* OUTPUT*************************************
+        symbol table:
+         L1 100
+         X 107
+         Y 108
+        
+         Literal Table:
+         1 =3
+         2 =1
+        
+         Intermediate code:
+        AD 01 C 100
+        100 IS 05 01 L 1
+        101 IS 06 02 S 1
+        102 IS 03 01 L 2
+        103 AD 04
+        104 IS 06 01 S 1
+        105
+        106 IS 02
+        107 DL 01
+        108 DL 02
+        AD 02 C 1
+        AD 02 C 2
+        
+        Machine Code:
+        Machine Code
+        100 05 01 =3
+        101 06 02 100
+        102 03 01 =1
+        103 04
+        104 06 01
+        106 02
+        107 01
+        108 02
+        
+        ******************************************************************** */
+    </pre>
